@@ -1,0 +1,88 @@
+# Example GitLab CI pipeline for md2pdf.
+# Copy this file to .gitlab-ci.yml in your documentation repository and adjust
+# GUIDE_PATH / OUTPUT_PDF values for your own content layout.
+
+stages:
+  - validate
+  - build
+
+mdx_check:
+  stage: validate
+  image: node:20-alpine
+  variables:
+    GIT_DEPTH: "0"
+  rules:
+    - changes:
+        - resources/**/*
+        - md2pdf/**/*
+        - example-ci.yml
+      when: always
+    - when: never
+  script:
+    - set -euo pipefail
+    - apk add --no-cache git
+    - npm i --no-save @mdx-js/mdx@3 gray-matter@4
+    - |
+      ROOT="${DOCS_ROOT:-resources}"
+      test -d "$ROOT" || { echo "Docs root not found: $ROOT"; exit 0; }
+      find "$ROOT" -type f \( -name '*.md' -o -name '*.mdx' \) > /tmp/mdx_files.txt
+      COUNT="$(wc -l < /tmp/mdx_files.txt | tr -d ' ')"
+      [ "$COUNT" -gt 0 ] || { echo "No Markdown/MDX files to check."; exit 0; }
+      echo "Files to validate: $COUNT"
+    - |
+      node --input-type=module - <<'NODE'
+      import fs from 'node:fs';
+      import matter from 'gray-matter';
+      import {compile} from '@mdx-js/mdx';
+
+      const files = fs.readFileSync('/tmp/mdx_files.txt', 'utf8')
+        .split('\n').map(s => s.trim()).filter(Boolean);
+
+      for (const file of files) {
+        if (!fs.existsSync(file)) continue;
+        const {content} = matter(fs.readFileSync(file, 'utf8'));
+        try {
+          await compile(content);
+        } catch (error) {
+          console.error(`\nMDX failed: ${file}\n${error?.message || error}\n`);
+          process.exit(1);
+        }
+      }
+
+      console.log(`MDX ok (${files.length} listed)`);
+      NODE
+
+.build_pdf_template:
+  stage: build
+  image: python:3.12-bookworm
+  needs:
+    - job: mdx_check
+      optional: true
+  before_script:
+    - set -euo pipefail
+    - apt-get update -qq
+    - apt-get install -y -qq pandoc fontconfig fonts-lato fonts-dejavu
+    - python -m pip install --no-cache-dir weasyprint
+    - chmod +x md2pdf.sh
+  script:
+    - ./md2pdf.sh "$GUIDE_PATH" "$OUTPUT_PDF" -s -v
+    - ls -lh "$OUTPUT_PDF"
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - "*.pdf"
+      - "*.html"
+
+example_pdf:
+  extends: .build_pdf_template
+  variables:
+    GUIDE_PATH: "resources/documentation/example-guide"
+    OUTPUT_PDF: "Example_Guide.pdf"
+  rules:
+    - changes:
+        - resources/documentation/example-guide/**/*
+        - md2pdf/**/*
+        - example-ci.yml
+      when: always
+    - when: never

@@ -1,0 +1,693 @@
+/* PDF stylesheet for WeasyPrint
+ * Provides print-oriented defaults for Markdown documentation
+ */
+
+/* Import fonts from system */
+@font-face {
+  font-family: 'Lato';
+  src: url('/usr/share/fonts/truetype/lato/Lato-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/usr/share/fonts/truetype/lato/Lato-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Source Code Pro';
+  src: url('/usr/share/fonts/truetype/source-code-pro/SourceCodePro-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* PDF color palette */
+:root {
+  /* Primary blacks */
+  --pdf-black-base: #101F2A;
+  --pdf-black-light: #162A39;
+  --pdf-black-lightest: #1B384F;
+
+  /* Blues */
+  --pdf-blue-800: #005EAE;
+  --pdf-blue-700: #0070CF;
+  --pdf-blue-600: #2998F5;
+  --pdf-blue-500: #53ACF8;
+  --pdf-blue-400: #89D4F5;
+  --pdf-blue-300: #EAF4FC;
+
+  /* Yellow branding */
+  --pdf-yellow-base: #FFB400;
+  --pdf-yellow-light: #FFDB84;
+  --pdf-yellow-lightest: #FFEFCA;
+
+  /* Accents */
+  --pdf-green-600: #12D968;
+  --pdf-red-600: #FF5151;
+  --pdf-violet-base: #8868E2;
+  --pdf-soft-blue-base: #4B9FF1;
+  --pdf-cyan-base: #3DC0D9;
+
+  /* Gray scale */
+  --pdf-gray-800: #3E5566;
+  --pdf-gray-600: #728593;
+  --pdf-gray-500: #AAB9C1;
+  --pdf-gray-400: #D0DBDF;
+  --pdf-gray-300: #DCE5EA;
+  --pdf-gray-200: #ECF1F5;
+  --pdf-gray-100: #F6F8FA;
+  --pdf-gray-50: #F9FAFB;
+  --pdf-white: #FFFFFF;
+
+  /* Heading size tokens */
+  --pdf-h1: 2.7rem;
+  --pdf-h2: 2.2rem;
+  --pdf-h3: 1.8rem;
+  --pdf-h4: 1.3rem;
+  --pdf-body: 1rem;
+}
+
+/* Page setup for PDF */
+@page {
+  size: A4;
+  margin: 0.5in;  /* equal margins all around */
+
+  @top-right {
+    content: string(doctitle);
+    font-size: 9pt;
+    font-style: italic;
+    color: var(--pdf-gray-600);
+  }
+
+  @bottom-right {
+    content: counter(page);
+    font-size: 9pt;
+    font-style: italic;
+    color: var(--pdf-gray-600);
+  }
+}
+
+@page :first {
+  @top-right { content: none; }
+  @bottom-right { content: none; }
+  counter-reset: page 0;
+}
+
+/* Body - matching Docusaurus */
+body {
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--pdf-black-base);
+  background-color: var(--pdf-white);
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+}
+
+/* Force all containers to use full width */
+main, article, section, div, header, #content, .content, .container {
+  max-width: none;
+  width: 100%;
+}
+
+/* Headings - smaller sizes for compact PDF */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  color: var(--pdf-black-base);
+  margin-top: 1em;
+  margin-bottom: 0.4em;
+  line-height: 1.2;
+  page-break-after: avoid;
+}
+
+h1 {
+  font-size: 20px;
+  margin-top: 0.8em;
+  string-set: doctitle content();
+}
+
+/* Chapter index headers only - larger, blue, and with page break */
+h1.chapter-index {
+  font-size: 26px;
+  color: var(--pdf-blue-700);
+  page-break-before: always;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+h3 {
+  font-size: 16px;
+}
+
+h4 {
+  font-size: 14px;
+}
+
+h5 {
+  font-size: 1.1rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+/* Paragraphs */
+p {
+  margin: 0 0 0.6em 0;
+  text-align: left;
+  orphans: 3;
+  widows: 3;
+}
+
+/* Links - Docusaurus blue */
+a {
+  color: var(--pdf-blue-700);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Lists (excluding TOC - see TOC section for isolated styles) */
+ul, ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+li {
+  margin: 0.2em 0;
+  line-height: 1.4;
+}
+
+/* Hide bullet points in local chapter Table of Contents sections */
+h4.unlisted + ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+
+h4.unlisted + ul li {
+  list-style: none !important;
+  padding-left: 0;
+}
+
+h4.unlisted + ul ul {
+  list-style: none !important;
+  padding-left: 1em !important;
+}
+
+h4.unlisted + ul ul li {
+  list-style: none !important;
+  padding-left: 0;
+}
+
+/* Code blocks - Only for standalone pre (not inside sourceCode) */
+pre:not(.sourceCode) {
+  font-family: 'Source Code Pro', monospace;
+  background-color: var(--pdf-gray-100);
+  border: 1px solid var(--pdf-gray-400);
+  border-left: 2px solid var(--pdf-blue-600);
+  border-radius: 4px;
+  padding: 0.8em;
+  margin: 0.8em 0;
+  font-size: 11px;
+  white-space: pre-wrap !important;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  overflow-wrap: anywhere !important;
+}
+
+/* All pre blocks get consistent text settings */
+pre {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 11px;
+  white-space: pre !important;
+  tab-size: 2 !important;
+  -moz-tab-size: 2 !important;
+  -webkit-tab-size: 2 !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Enable wrapping only for pre inside sourceCode to prevent clipping */
+div.sourceCode pre {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+}
+
+pre code {
+  font-family: 'Source Code Pro', monospace;
+  font-size: inherit;
+  line-height: 1.5;
+  background: transparent;
+  border: none;
+  white-space: inherit;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  overflow-wrap: inherit;
+  padding: 0;
+  color: var(--pdf-black-base);
+}
+
+/* Syntax highlighting - Colors only, no font-weight changes */
+code span.co { color: #408080; } /* Comment */
+code span.dt { color: #902000; } /* DataType */
+code span.kw { color: #005020; } /* Keyword */
+code span.st { color: #ba2121; } /* String */
+code span.at { color: #5d7029; } /* Attribute */
+code span.fu { color: #0000ff; } /* Function */
+code span.va { color: #19177c; } /* Variable */
+code span.ex { color: #005020; } /* Extension/executable */
+code span.op { color: #333333; } /* Operator */
+code span.ot { color: #005020; } /* Other token */
+
+/* Force all code spans to normal weight/style to prevent WeasyPrint glyph clipping */
+pre code span {
+  font-weight: normal !important;
+  font-style: normal !important;
+}
+
+/* Try to make code blocks copy better by treating spans as inline */
+pre code span {
+  display: inline !important;
+  white-space: inherit !important;
+}
+
+/* Inline code and base code styling */
+code {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 11px;
+  background-color: var(--pdf-gray-200);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+  color: var(--pdf-black-base);
+}
+
+/* Block quotes - Docusaurus style with left border */
+blockquote {
+  background-color: var(--pdf-blue-300);
+  border-left: 4px solid var(--pdf-blue-600);
+  border-radius: 4px;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  color: var(--pdf-gray-800);
+  page-break-inside: avoid;
+}
+
+blockquote p:first-child {
+  margin-top: 0;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Tables with blue headers and white text */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  page-break-before: avoid;
+  font-size: 0.9em;
+  line-height: 1.3;
+  border: 1px solid var(--pdf-gray-400);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Keep table header with at least first row */
+thead {
+  background-color: var(--pdf-blue-600);
+  page-break-after: avoid;
+}
+
+th {
+  font-weight: 700;
+  padding: 0.5em 0.8em;
+  text-align: left;
+  border-bottom: 2px solid var(--pdf-blue-700);
+  color: var(--pdf-white);
+  font-size: 1.05em;
+}
+
+td {
+  padding: 0.4em 0.6em;
+  border-bottom: 1px solid var(--pdf-gray-300);
+}
+
+/* Avoid breaking inside table rows when possible */
+tbody tr {
+  page-break-inside: avoid;
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--pdf-gray-50);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5em auto;
+}
+
+/* Figures */
+figure {
+  margin: 1.5em 0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+figcaption {
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--pdf-gray-600);
+  margin-top: 0.5em;
+}
+
+/* Horizontal rules - hide the separator lines */
+hr {
+  display: none;
+}
+
+/* Strong/Bold */
+strong, b {
+  font-weight: 700;
+  color: var(--pdf-black-base);
+}
+
+/* Emphasis/Italic */
+em, i {
+  font-style: italic;
+}
+
+/* Table of Contents - class names added by style_toc() Perl function */
+#TOC, nav#TOC {
+  background-color: var(--pdf-gray-50);
+  border: 1px solid var(--pdf-gray-300);
+  border-radius: 6px;
+  padding: 1.5em;
+  margin: 2em 0;
+  page-break-after: always;
+}
+
+#TOC ul, nav#TOC ul {
+  list-style: none;
+  list-style-type: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+#TOC li, nav#TOC li {
+  list-style: none;
+  list-style-type: none;
+  margin: 0.3em 0;
+  line-height: normal;
+}
+
+#TOC a, nav#TOC a {
+  display: block;
+  color: var(--pdf-blue-700);
+  text-decoration: none;
+}
+
+#TOC a::after, nav#TOC a::after {
+  content: leader('.') target-counter(attr(href), page);
+  float: right;
+  background: var(--pdf-gray-50);
+  padding-left: 0.3em;
+  color: var(--pdf-gray-600);
+}
+
+#TOC a:hover, nav#TOC a:hover {
+  color: var(--pdf-blue-800);
+}
+
+/* TOC hierarchy classes - applied by style_toc() based on numbering pattern */
+/* Apply no-bullet style to all TOC level classes */
+#TOC li[class^="toc-l"] {
+  list-style: none;
+  list-style-type: none;
+}
+
+#TOC li.toc-l1 > a {
+  font-size: 1.15em;
+  font-weight: 700;
+}
+
+#TOC li.toc-l2 {
+  margin-left: 1em;
+}
+
+#TOC li.toc-l2 > a {
+  font-size: 0.95em;
+  font-weight: normal;
+  margin-left: 1em;
+}
+
+#TOC li.toc-l3 {
+  margin-left: 1.75em;
+}
+
+#TOC li.toc-l3 > a {
+  font-size: 0.9em;
+  font-weight: normal;
+  margin-left: 1.75em;
+}
+
+#TOC li.toc-l4 {
+  margin-left: 2.5em;
+}
+
+#TOC li.toc-l4 > a {
+  font-size: 0.85em;
+  font-weight: normal;
+  margin-left: 2.5em;
+}
+
+#TOC li.toc-l5 {
+  margin-left: 3.25em;
+}
+
+#TOC li.toc-l5 > a {
+  font-size: 0.8em;
+  font-weight: normal;
+  margin-left: 3.25em;
+}
+
+#TOC li.toc-l6 {
+  margin-left: 4em;
+}
+
+#TOC li.toc-l6 > a {
+  font-size: 0.75em;
+  font-weight: normal;
+  margin-left: 4em;
+}
+
+/* Admonitions/Callouts - Docusaurus default style */
+/* Base callout styling - tightened spacing */
+div.note,
+div.tip,
+div[class^="info"],
+div[class^="warning"] {
+  border-left: 4px solid;
+  border-radius: 4px;
+  padding: 0.7em 1em;
+  margin: 1em 0;
+  page-break-inside: avoid;
+}
+
+/* Note callouts (gray) */
+div.note {
+  background-color: var(--pdf-gray-100);
+  border-left-color: var(--pdf-gray-500);
+}
+
+div.note::before {
+  content: "Note";
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.3em;
+  color: var(--pdf-gray-800);
+}
+
+/* Info callouts (blue) */
+div[class^="info"] {
+  background-color: var(--pdf-blue-300);
+  border-left-color: var(--pdf-blue-600);
+}
+
+div[class^="info"]::before {
+  content: "Important";
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.3em;
+  color: var(--pdf-blue-800);
+}
+
+/* Tip callouts (green) */
+div.tip {
+  background-color: #f0fff4;
+  border-left-color: var(--pdf-green-600);
+}
+
+div.tip::before {
+  content: "Tip";
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.3em;
+  color: #22543d;
+}
+
+/* Warning callouts (yellow) */
+div[class^="warning"] {
+  background-color: var(--pdf-yellow-lightest);
+  border-left-color: var(--pdf-yellow-base);
+}
+
+div[class^="warning"]::before {
+  content: "Warning";
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.3em;
+  color: #996300;
+}
+
+/* Callout paragraphs - tighter spacing */
+div.note p,
+div.tip p,
+div[class^="info"] p,
+div[class^="warning"] p {
+  margin: 0.3em 0;
+}
+
+div.note p:first-child,
+div.tip p:first-child,
+div[class^="info"] p:first-child,
+div[class^="warning"] p:first-child {
+  margin-top: 0;
+}
+
+div.note p:last-child,
+div.tip p:last-child,
+div[class^="info"] p:last-child,
+div[class^="warning"] p:last-child {
+  margin-bottom: 0;
+}
+
+/* Page breaks */
+.page-break {
+  page-break-after: always;
+}
+
+.keep-together {
+  page-break-inside: avoid;
+}
+
+/* Title page styling */
+header h1:first-child {
+  font-size: 3rem;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  color: var(--pdf-blue-700);
+}
+
+/* Definition lists */
+dt {
+  font-weight: 700;
+  margin-top: 1em;
+}
+
+dd {
+  margin-left: 2em;
+  margin-bottom: 0.5em;
+}
+
+/* Pandoc sourceCode wrapper styling - only apply to div wrapper, not pre */
+div.sourceCode {
+  background-color: var(--pdf-gray-100);
+  border: 1px solid var(--pdf-gray-400);
+  border-left: 2px solid var(--pdf-blue-600);
+  border-radius: 4px;
+  padding: 0.8em;
+  margin: 0.8em 0;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Make pre transparent inside sourceCode to avoid double backgrounds */
+div.sourceCode pre {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+
+
+/* Cover page styling with background image */
+#title-block-header {
+  page-break-after: always;
+  background-image: url('cover.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 29.7cm;
+  width: 21cm;
+  height: 29.7cm;
+  margin: -0.5in -0.5in -0.5in -0.5in;
+  padding: 6em 2em 2em 2em;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+  position: relative;
+}
+
+/* No overlay - text directly on image */
+
+/* Title styling on cover */
+#title-block-header .title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: black;
+  margin-top: 20rem;
+  margin-left: 3rem;
+  margin-right: 3rem;
+  margin-bottom: 0.3rem;
+  z-index: 2;
+  position: relative;
+}
+
+/* Author and date styling on cover */
+#title-block-header .author {
+  font-size: 2rem;
+  color: black;
+  margin: 0.2rem 0;
+  margin-left: 3rem;
+  z-index: 2;
+  position: relative;
+}
+
+#title-block-header .date {
+  font-size: 1.1rem;
+  color: black;
+  margin: 0.5rem 0;
+  margin-left: 3rem;
+  z-index: 2;
+  position: relative;
+}
